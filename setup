@@ -20,7 +20,7 @@ sed -i '/^hosts: /s/files dns/files mdns dns/' /etc/nsswitch.conf
 ln -sf /usr/lib/systemd/system/avahi-daemon.service /etc/systemd/system/multi-user.target.wants/avahi-daemon.service
 
 # Enable wireless, actual connection details will be configured by the user, likely over usb-serial
-ln -sf /usr/lib/systemd/system/avahi-daemon.service /etc/systemd/system/multi-user.target.wants/avahi-daemon.service
+ln -sf /usr/lib/systemd/system/wpa_supplicant@.service /etc/systemd/system/multi-user.target.wants/wpa_supplicant@wlan0.service
 touch /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
 cat >/etc/systemd/network/50-wired.network <<EOF
 [Match]
