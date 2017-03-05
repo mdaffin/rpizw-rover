@@ -11,4 +11,4 @@ addons:
       - wget
       - dosfstools
 script:
-    - ./create-image
+    - sudo ./create-image
