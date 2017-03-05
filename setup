@@ -4,7 +4,7 @@ trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
 IFS=$'\n\t'
 
 # Install required packages
-pacman -Syu --noconfirm vim bash-completion zsh grml-zsh-config sudo wpa_supplicant avahi nss-mdns
+pacman -Syu --noconfirm vim bash-completion zsh grml-zsh-config sudo avahi nss-mdns wpa_supplicant termite-terminfo
 echo rpizw-rover > /etc/hostname
 
 # Configure sudo
@@ -21,13 +21,20 @@ ln -sf /usr/lib/systemd/system/avahi-daemon.service /etc/systemd/system/multi-us
 
 # Enable wireless, actual connection details will be configured by the user, likely over usb-serial
 ln -sf /usr/lib/systemd/system/wpa_supplicant@.service /etc/systemd/system/multi-user.target.wants/wpa_supplicant@wlan0.service
-touch /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
-cat >/etc/systemd/network/50-wired.network <<EOF
+
+cat >/etc/systemd/network/wlan0.network <<EOF
 [Match]
 Name=wlan0
-
 [Network]
-DHCP=ipv4
+DHCP=yes
+EOF
+
+cat <<EOF > /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+ctrl_interface=/var/run/wpa_supplicant
+ctrl_interface_group=wheel
+update_config=1
+fast_reauth=1
+ap_scan=1
 EOF
 
 # Enable the usb serial
@@ -38,6 +45,7 @@ ln -sf /usr/lib/systemd/system/getty@ttyGS0.service /etc/systemd/system/getty.ta
 # Enable hardware pwm
 grep 'dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4' /boot/config.txt >/dev/null || echo 'dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4' >> /boot/config.txt
 
+# Set zsh as the defualt shell for root and alram
 chsh -s /usr/bin/zsh root
 chsh -s /usr/bin/zsh alarm
 touch /root/.zshrc
