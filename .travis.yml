@@ -11,7 +11,7 @@ addons:
     - dosfstools
 script:
 - sudo ./create-image
-- xz -z rpizw-rover.img
+- xz -z rpizw-rover.img -c > rpizw-rover.img.xz
 deploy:
   provider: releases
   api_key:
