@@ -9,14 +9,18 @@ addons:
     - parted
     - wget
     - dosfstools
+    - zip
 script:
 - sudo ./create-image
 - xz -z rpizw-rover.img -c > rpizw-rover.img.xz
+- zip rpizw-rover.img.zip rpizw-rover.img
 deploy:
   provider: releases
   api_key:
     secure: JRjqMgdgMmHGhxWeGsB+o2hRqMRI7fGKoEQkgpVyYwm88sYVYbt88JV/Pw/hZAfQT17yP98E+RwaOFOnmSWpCaqRN2AH1s8aJFWGjWyIx8R/g2QL4OOHdajkrp3VUo5wuF4V7I+TQ2qj611taboLObwagiPXyiAcuIRVtSlHfOSUSVnubSc3MOMfLzn7QyPvdQxYfzS6jtd1NIwkhKF1nYYvB28CX9sl6s/InKnJ8dmJP75Z15UzRnhfyCBL+jtIBUbv0cuUnbLQmQq43JOriY03jEnE8fQYLSu0BSHHbHVDkHx6ouGUTjaYkXwhmqlcn8Hqm+EMa9/NgX8bEr0J2w1NBS/5GpdqTL8szR/IzMl5q71TLsHoX4Mkjui0c5v39LDdkrJ40uwXblgHITwRtYLx+B68kV6R3FyRwjqWKwjqohU8orr6PhP21hdi4GbbmLDs8l6nkkPQtDNMHjIRVVzSUD1SNWVid771VvEfSF15lq7I5bQls1y5LLbtImAtChMXnlH5/lvxvaGR8Bp38cfJPmtaQUvtHMX1q+8q0Pqy8BdWLkHjyXHrp7NXOPjMIcjH7UWq/X6YdndNVAgMY8p6pErfqu1bZi9csng6DZS0VgunJ5UB5WGMxVuDT3L9uZk9BcvE7Fe7Z44zgz3LJcaEV8MZNBhVdQrlpxlrAwg=
-  file: rpizw-rover.img.xz
+  file:
+  - rpizw-rover.img.xz
+  - rpizw-rover.img.zip
   skip_cleanup: true
   on:
     repo: mdaffin/rpizw-rover
