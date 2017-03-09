@@ -1,0 +1,7 @@
+[package]
+name = "rpizw-rover"
+version = "0.1.0"
+authors = ["mdaffin <michael.daffin@switchconcepts.com>"]
+
+[dependencies]
+sysfs-pwm = "0.1.0"
