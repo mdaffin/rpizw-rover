@@ -1,4 +1,5 @@
 dist: trusty
+language: rust
 sudo: required
 addons:
   apt:
@@ -10,7 +11,9 @@ addons:
     - wget
     - dosfstools
     - zip
+    - gcc-arm-linux-gnueabihf
 script:
+- cargo build --release --target arm-unknown-linux-gnueabihf
 - sudo ./create-image
 - xz -z rpizw-rover.img -c > rpizw-rover.img.xz
 - zip rpizw-rover.img.zip rpizw-rover.img

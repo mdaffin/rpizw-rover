@@ -1,43 +1,69 @@
 extern crate sysfs_pwm;
-use sysfs_pwm::{Pwm, Result};
+#[macro_use]
+extern crate error_chain;
+#[macro_use]
+extern crate clap;
 
-// PIN: EHRPWM0A (P9_22)
-const BB_PWM_CHIP: u32 = 0;
-const BB_PWM_NUMBER: u32 = 0;
+mod error;
+mod rover;
 
-fn pwm_increase_to_max(pwm: &Pwm, duration_ms: u32, update_period_ms: u32) -> Result<()> {
-    let step: f32 = duration_ms as f32 / update_period_ms as f32;
-    let mut duty_cycle = 0.0;
-    let period_ns: u32 = try!(pwm.get_period_ns());
-    while duty_cycle < 1.0 {
-        try!(pwm.set_duty_cycle_ns((duty_cycle * period_ns as f32) as u32));
-        duty_cycle += step;
+use error::*;
+use clap::ArgMatches;
+
+const PWM_CHIP: u32 = 0;
+const LEFT_PWM: u32 = 0;
+const RIGHT_PWM: u32 = 1;
+
+fn run(matches: ArgMatches) -> Result<()> {
+    use rover::Rover;
+    let rover = Rover::new(PWM_CHIP, LEFT_PWM, RIGHT_PWM)?;
+
+    if let Some(_) = matches.subcommand_matches("disable") {
+        rover.enable(false)
+    } else if let Some(_) = matches.subcommand_matches("enable") {
+        rover.enable(true)
+    } else if let Some(_) = matches.subcommand_matches("stop") {
+        rover.stop()
+    } else if let Some(matches) = matches.subcommand_matches("speed") {
+        let left = matches.value_of("LEFT").unwrap();
+        let right = matches.value_of("RIGHT").unwrap_or(left);
+        let left: i8 = left.parse::<i8>().chain_err(|| "failed to parse left speed")?;
+        let right: i8 = right.parse::<i8>().chain_err(|| "failed to parse right speed")?;
+
+        rover.set_speed(left, right)?;
+        if !matches.is_present("dont-enable") {
+            rover.enable(true)?;
+        }
+        Ok(())
+
+    } else if let Some(_) = matches.subcommand_matches("unexport") {
+        rover.unexport()
+    } else {
+        panic!("subcommand not recognised");
     }
-    pwm.set_duty_cycle_ns(period_ns)
 }
 
-fn pwm_decrease_to_minimum(pwm: &Pwm, duration_ms: u32, update_period_ms: u32) -> Result<()> {
-    let step: f32 = duration_ms as f32 / update_period_ms as f32;
-    let mut duty_cycle = 1.0;
-    let period_ns: u32 = try!(pwm.get_period_ns());
-    while duty_cycle > 0.0 {
-        try!(pwm.set_duty_cycle_ns((duty_cycle * period_ns as f32) as u32));
-        duty_cycle -= step;
-    }
-    pwm.set_duty_cycle_ns(0)
-}
-
-/// Make an LED "breathe" by increasing and
-/// decreasing the brightness
 fn main() {
-    let pwm = Pwm::new(BB_PWM_CHIP, BB_PWM_NUMBER).unwrap(); // number depends on chip, etc.
-    pwm.with_exported(|| {
-            pwm.enable(true).unwrap();
-            pwm.set_period_ns(20_000).unwrap();
-            loop {
-                pwm_increase_to_max(&pwm, 1000, 20).unwrap();
-                pwm_decrease_to_minimum(&pwm, 1000, 20).unwrap();
-            }
-        })
-        .unwrap();
+    use clap::App;
+
+    let yaml = load_yaml!("cli.yml");
+    let matches = App::from_yaml(yaml).get_matches();
+
+    if let Err(ref e) = run(matches) {
+        use std::io::Write;
+        let stderr = &mut ::std::io::stderr();
+        let errmsg = "Error writing to stderr";
+
+        writeln!(stderr, "error: {}", e).expect(errmsg);
+
+        for e in e.iter().skip(1) {
+            writeln!(stderr, "caused by: {}", e).expect(errmsg);
+        }
+
+        if let Some(backtrace) = e.backtrace() {
+            writeln!(stderr, "backtrace: {:?}", backtrace).expect(errmsg);
+        }
+
+        ::std::process::exit(1);
+    }
 }

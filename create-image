@@ -16,6 +16,12 @@ script="setup"
 rpi_tar="ArchLinuxARM-rpi-latest.tar.gz"
 rpi_url="http://archlinuxarm.org/os/${rpi_tar}"
 
+# Check to see if the binrary has been built, we check this first to we can bail early.
+if [ ! -f "target/arm-unknown-linux-gnueabihf/release/rpizw-rover" ]; then
+    echo "'target/arm-unknown-linux-gnueabihf/release/rpizw-rover' not found. Have you run 'cargo build --release --target=arm-unknown-linux-gnueabihf'?"
+    exit 1
+fi
+
 # Unmount drives and general cleanup on exit, the trap ensures this will always
 # run execpt in the most extream cases.
 cleanup() {
@@ -28,7 +34,7 @@ cleanup() {
 	umount "${mount}" || true
         rmdir "${mount}" || true
     fi
-    [ -n "${loopdev}" ] && losetup --detach "${loopdev}" || true
+    [ -n "${loopdev:-}" ] && losetup --detach "${loopdev}" || true
 }
 trap cleanup EXIT
 
@@ -55,8 +61,9 @@ mount "${bootdev}" "${mount}/boot"
 # Install archlinuxarm to the image
 tar -xpf "${rpi_tar}" -C ${mount} 2> >(grep -v "Ignoring unknown extended header keyword")
 
-# Copy our installtion script
+# Copy our installtion script and other artifacts
 install -Dm755 "${script}" "${mount}/tmp/${script}"
+install -Dm755 "target/arm-unknown-linux-gnueabihf/release/rpizw-rover" "${mount}/usr/local/bin/rpizw-rover"
 
 # Prep the chroot
 mount -t proc none ${mount}/proc
@@ -65,6 +72,5 @@ mount -o bind /dev ${mount}/dev
 rm ${mount}/etc/resolv.conf
 cp /etc/resolv.conf ${mount}/etc/resolv.conf
 cp /usr/bin/qemu-arm-static ${mount}/usr/bin/
-cp rover-test.sh ${mount}/home/alarm/rover-test.sh
 
 chroot ${mount}  "/tmp/${script}"

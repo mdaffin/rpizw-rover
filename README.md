@@ -10,10 +10,10 @@ Once the pi has booted you can connect to it via a serial interface over a usb
 cable by running `picocom /dev/ttyAMA0`. From here you can set the wireless
 credentials by running `wpa_passphrase "<SSID>" "<PASSPHRASE>" >
 /etc/wpa_supplicant/wpa_supplicant-wlan0.conf`. `ip addr` will tell you its
-ipaddress so you can ssh into it allowing you to run completely wirelessly.
+ip address so you can ssh into it allowing you to run completely wirelessly.
 
 Once in the pi run `sudo ./rover-test.sh` to see if it works. It should move
-forward for a second, then back, turn left, turn right and finally stoping
+forward for a second, then back, turn left, turn right and finally stopping
 before repeating the pattern. Hit `ctrl+c` to stop the script (and the robot).
 
 ## Cross compile

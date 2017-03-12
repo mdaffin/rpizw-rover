@@ -5,3 +5,5 @@ authors = ["mdaffin <michael.daffin@switchconcepts.com>"]
 
 [dependencies]
 sysfs-pwm = "0.1.0"
+error-chain = "0.10.0"
+clap = {version = "2.20.5", features = ["yaml"]}
