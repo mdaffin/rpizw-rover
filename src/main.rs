@@ -18,7 +18,7 @@ fn run() -> Result<()> {
     use rover::Rover;
 
     let yaml = load_yaml!("cli.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml).version(crate_version!()).get_matches();
 
     let rover = Rover::new(PWM_CHIP, LEFT_PWM, RIGHT_PWM)?;
 

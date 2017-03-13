@@ -1,5 +1,4 @@
 name: rpizw-rover
-version: "0.0.1"
 author: Michael Daffin <michael@daffin.io>
 about: Controls a raspberry pi zero powered rover
 subcommands:

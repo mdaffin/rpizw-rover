@@ -1,6 +1,6 @@
 [package]
 name = "rpizw-rover"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["mdaffin <michael.daffin@switchconcepts.com>"]
 
 [dependencies]
