@@ -59,8 +59,6 @@ tar -xpf "${rpi_tar}" -C ${mount} 2> >(grep -v "Ignoring unknown extended header
 cp "${script}" "${mount}/tmp/${script}"
 chmod +x "${mount}/tmp/${script}"
 
-ls -l "${mount}/tmp/${script}"
-
 # Prep the chroot
 mount -t proc none ${mount}/proc
 mount -t sysfs none ${mount}/sys
