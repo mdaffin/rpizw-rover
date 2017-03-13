@@ -26,5 +26,5 @@ sudo apt-get install -qq gcc-arm-linux-gnueabihf
 # arch aur package: arm-linux-gnueabihf-gcc
 rustup update stable
 rustup override stable
-rustup target add armv7-unknown-linux-gnueabihf
+rustup target add arm-unknown-linux-gnueabihf
 ```
