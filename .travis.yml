@@ -11,14 +11,14 @@ addons:
     - dosfstools
     - zip
     - gcc-arm-linux-gnueabihf
-    - build-essential
+    - libc6-armhf-cross
+    - libc6-dev-armhf-cross
 install:
 - export PATH="$PATH:$HOME/.cargo/bin"
 - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain=stable
 - rustup target add arm-unknown-linux-gnueabihf
 script:
 - cargo build --release --target arm-unknown-linux-gnueabihf
-- cat config.log
 - sudo ./create-image
 - xz -z rpizw-rover.img -c > rpizw-rover.img.xz
 - zip rpizw-rover.img.zip rpizw-rover.img
