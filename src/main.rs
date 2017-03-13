@@ -43,7 +43,8 @@ fn run() -> Result<()> {
     } else if let Some(_) = matches.subcommand_matches("unexport") {
         rover.unexport()
     } else {
-        panic!("subcommand not recognised");
+        println!("{}", matches.usage());
+        Ok(())
     }
 }
 

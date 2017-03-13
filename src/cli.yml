@@ -8,9 +8,9 @@ subcommands:
     - unexport:
         about: unexports the underlying pwm hardware interface so it can be used by other programs
     - enable:
-        about: enables the wheels
+        about: enables the motors
     - disable:
-        about: disables the wheels
+        about: disables the motors
     - speed:
         about: sets the speed of the rover
         args:

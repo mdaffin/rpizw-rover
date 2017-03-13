@@ -11,28 +11,28 @@ pub struct Rover {
 }
 
 impl Rover {
-    /// Creates a new rovers with both wheels enabled but stopped. The wheels
+    /// Creates a new rovers with both motors enabled but stopped. The motors
     /// will be disabled and the underlying pwm drivers unexported when the
     /// rover is dropped.
     pub fn new(chip: u32, left_pin: u32, right_pin: u32) -> Result<Rover> {
-        let left = Pwm::new(chip, left_pin).chain_err(|| "failed to create left wheel")?;
-        let right = Pwm::new(chip, right_pin).chain_err(|| "failed to create right wheel")?;
-        left.export().chain_err(|| "failed to export the left wheel pwm channel")?;
-        right.export().chain_err(|| "failed to export the right wheel pwm channel")?;
-        left.set_period_ns(PERIOD).chain_err(|| "failed to set period on left wheel")?;
-        right.set_period_ns(PERIOD).chain_err(|| "failed to set period on right wheel")?;
+        let left = Pwm::new(chip, left_pin).chain_err(|| "failed to create left motor")?;
+        let right = Pwm::new(chip, right_pin).chain_err(|| "failed to create right motor")?;
+        left.export().chain_err(|| "failed to export the left motor pwm channel")?;
+        right.export().chain_err(|| "failed to export the right motor pwm channel")?;
+        left.set_period_ns(PERIOD).chain_err(|| "failed to set period on left motor")?;
+        right.set_period_ns(PERIOD).chain_err(|| "failed to set period on right motor")?;
         Ok(Rover {
             left: left,
             right: right,
         })
     }
 
-    /// Enables/disables the wheel. When disabled they keep their current
+    /// Enables/disables the motor. When disabled they keep their current
     /// speed and their speed can still be set but they will not move until
     /// enabled.
     pub fn enable(&self, enabled: bool) -> Result<()> {
-        self.left.enable(enabled).chain_err(|| "failed to enable left wheel")?;
-        self.right.enable(enabled).chain_err(|| "failed to enable right wheel")
+        self.left.enable(enabled).chain_err(|| "failed to enable left motor")?;
+        self.right.enable(enabled).chain_err(|| "failed to enable right motor")
     }
 
     /// Converts a speed between -100 (full reverse) and 100 (full forward)
@@ -49,31 +49,31 @@ impl Rover {
         duty_cycle
     }
 
-    /// Sets the speed of the left wheel. Can be any value between -100 (full
+    /// Sets the speed of the left motor. Can be any value between -100 (full
     /// reverse) and 100 (full forward), values above or below these limits will
     /// be to to the limit.
     pub fn set_left_speed(&self, speed: i8) -> Result<()> {
         self.left
             .set_duty_cycle_ns(Rover::speed_to_duty_cycle(-speed))
-            .chain_err(|| "failed to set duty on left wheel")
+            .chain_err(|| "failed to set duty on left motor")
     }
 
-    /// Sets the speed of the right wheel. Can be any value between -100 (full
+    /// Sets the speed of the right motor. Can be any value between -100 (full
     /// reverse) and 100 (full forward), values above or below these limits will
     /// be to to the limit.
     pub fn set_right_speed(&self, speed: i8) -> Result<()> {
         self.right
             .set_duty_cycle_ns(Rover::speed_to_duty_cycle(speed))
-            .chain_err(|| "failed to set duty on left wheel")
+            .chain_err(|| "failed to set duty on left motor")
     }
 
-    /// Stops both the wheels, equlivent to setting their speeds to 0.
+    /// Stops both the motors, equlivent to setting their speeds to 0.
     pub fn stop(&self) -> Result<()> {
         self.set_left_speed(0)?;
         self.set_right_speed(0)
     }
 
-    /// Sets the speed of left and right wheel. Can be any value between -100 (full
+    /// Sets the speed of left and right motor. Can be any value between -100 (full
     /// reverse) and 100 (full forward), values above or below these limits will
     /// be to to the limit.
     pub fn set_speed(&self, left: i8, right: i8) -> Result<()> {
@@ -81,11 +81,11 @@ impl Rover {
         self.set_right_speed(right)
     }
 
-    /// Unexports the wheels so they can no longer be used
+    /// Unexports the motors so they can no longer be used
     pub fn unexport(self) -> Result<()> {
-        self.left.enable(false).chain_err(|| "failed to disable left wheel")?;
-        self.right.enable(false).chain_err(|| "failed to disable right wheel")?;
-        self.left.unexport().chain_err(|| "failed to unexport left wheel")?;
-        self.right.unexport().chain_err(|| "failed to unexport right wheel")
+        self.left.enable(false).chain_err(|| "failed to disable left motor")?;
+        self.right.enable(false).chain_err(|| "failed to disable right motor")?;
+        self.left.unexport().chain_err(|| "failed to unexport left motor")?;
+        self.right.unexport().chain_err(|| "failed to unexport right motor")
     }
 }
