@@ -19,7 +19,7 @@ fn run() -> Result<()> {
 
     let yaml = load_yaml!("cli.yml");
     let matches = App::from_yaml(yaml).get_matches();
-    
+
     let rover = Rover::new(PWM_CHIP, LEFT_PWM, RIGHT_PWM)?;
 
     if let Some(_) = matches.subcommand_matches("disable") {
@@ -48,7 +48,7 @@ fn run() -> Result<()> {
 }
 
 fn main() {
-    if let Err(ref e) = run(matches) {
+    if let Err(ref e) = run() {
         use std::io::Write;
         let stderr = &mut ::std::io::stderr();
         let errmsg = "Error writing to stderr";
