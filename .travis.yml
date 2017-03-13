@@ -1,5 +1,4 @@
 dist: trusty
-language: rust
 sudo: required
 addons:
   apt:
@@ -12,6 +11,9 @@ addons:
     - dosfstools
     - zip
     - gcc-arm-linux-gnueabihf
+install:
+- curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain=stable
+- rustup install arm-unknown-linux-gnueabihf
 script:
 - cargo build --release --target arm-unknown-linux-gnueabihf
 - sudo ./create-image
