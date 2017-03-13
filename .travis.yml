@@ -11,6 +11,7 @@ addons:
     - dosfstools
     - zip
     - gcc-arm-linux-gnueabihf
+    - build-essential
 install:
 - export PATH="$PATH:$HOME/.cargo/bin"
 - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain=stable
