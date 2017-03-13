@@ -14,7 +14,7 @@ addons:
 install:
 - export PATH="$PATH:$HOME/.cargo/bin"
 - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain=stable
-- rustup install arm-unknown-linux-gnueabihf
+- rustup target add arm-unknown-linux-gnueabihf
 script:
 - cargo build --release --target arm-unknown-linux-gnueabihf
 - sudo ./create-image
