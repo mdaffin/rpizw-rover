@@ -8,14 +8,18 @@ mod error;
 mod rover;
 
 use error::*;
-use clap::ArgMatches;
 
 const PWM_CHIP: u32 = 0;
 const LEFT_PWM: u32 = 0;
 const RIGHT_PWM: u32 = 1;
 
-fn run(matches: ArgMatches) -> Result<()> {
+fn run() -> Result<()> {
+    use clap::App;
     use rover::Rover;
+
+    let yaml = load_yaml!("cli.yml");
+    let matches = App::from_yaml(yaml).get_matches();
+    
     let rover = Rover::new(PWM_CHIP, LEFT_PWM, RIGHT_PWM)?;
 
     if let Some(_) = matches.subcommand_matches("disable") {
@@ -44,11 +48,6 @@ fn run(matches: ArgMatches) -> Result<()> {
 }
 
 fn main() {
-    use clap::App;
-
-    let yaml = load_yaml!("cli.yml");
-    let matches = App::from_yaml(yaml).get_matches();
-
     if let Err(ref e) = run(matches) {
         use std::io::Write;
         let stderr = &mut ::std::io::stderr();
