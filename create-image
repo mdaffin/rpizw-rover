@@ -17,8 +17,8 @@ rpi_tar="ArchLinuxARM-rpi-latest.tar.gz"
 rpi_url="http://archlinuxarm.org/os/${rpi_tar}"
 
 # Check to see if the binrary has been built, we check this first to we can bail early.
-if [ ! -f "target/arm-unknown-linux-gnueabihf/release/rpizw-rover" ]; then
-    echo "'target/arm-unknown-linux-gnueabihf/release/rpizw-rover' not found. Have you run 'cargo build --release --target=arm-unknown-linux-gnueabihf'?"
+if [ ! -f "target/arm-unknown-linux-gnueabihf/release/rover-cli" ]; then
+    echo "'target/arm-unknown-linux-gnueabihf/release/rover-cli' not found. Have you run 'cargo build --release --target=arm-unknown-linux-gnueabihf'?"
     exit 1
 fi
 
@@ -63,7 +63,7 @@ tar -xpf "${rpi_tar}" -C ${mount} 2> >(grep -v "Ignoring unknown extended header
 
 # Copy our installtion script and other artifacts
 install -Dm755 "${script}" "${mount}/tmp/${script}"
-install -Dm755 "target/arm-unknown-linux-gnueabihf/release/rpizw-rover" "${mount}/usr/local/bin/rpizw-rover"
+install -Dm755 "target/arm-unknown-linux-gnueabihf/release/rover-cli" "${mount}/usr/local/bin/rpizw-rover"
 
 # Prep the chroot
 mount -t proc none ${mount}/proc
