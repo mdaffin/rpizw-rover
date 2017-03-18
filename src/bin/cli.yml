@@ -1,4 +1,4 @@
-name: rpizw-rover
+name: rover-cli
 author: Michael Daffin <michael@daffin.io>
 about: Controls a raspberry pi zero powered rover
 subcommands:
