@@ -17,14 +17,18 @@ impl Rover {
     pub fn new(chip: u32, left_pin: u32, right_pin: u32) -> Result<Rover> {
         let left = Pwm::new(chip, left_pin).chain_err(|| "failed to create left motor")?;
         let right = Pwm::new(chip, right_pin).chain_err(|| "failed to create right motor")?;
-        left.export().chain_err(|| "failed to export the left motor pwm channel")?;
-        right.export().chain_err(|| "failed to export the right motor pwm channel")?;
-        left.set_period_ns(PERIOD).chain_err(|| "failed to set period on left motor")?;
-        right.set_period_ns(PERIOD).chain_err(|| "failed to set period on right motor")?;
         Ok(Rover {
             left: left,
             right: right,
         })
+    }
+
+    /// Exports and setup the period for the servos.
+    pub fn export(&self) -> Result<()> {
+        self.left.export().chain_err(|| "failed to export the left motor pwm channel")?;
+        self.right.export().chain_err(|| "failed to export the right motor pwm channel")?;
+        self.left.set_period_ns(PERIOD).chain_err(|| "failed to set period on left motor")?;
+        self.right.set_period_ns(PERIOD).chain_err(|| "failed to set period on right motor")
     }
 
     /// Enables/disables the motor. When disabled they keep their current
@@ -82,9 +86,7 @@ impl Rover {
     }
 
     /// Unexports the motors so they can no longer be used
-    pub fn unexport(self) -> Result<()> {
-        self.left.enable(false).chain_err(|| "failed to disable left motor")?;
-        self.right.enable(false).chain_err(|| "failed to disable right motor")?;
+    pub fn unexport(&self) -> Result<()> {
         self.left.unexport().chain_err(|| "failed to unexport left motor")?;
         self.right.unexport().chain_err(|| "failed to unexport right motor")
     }
