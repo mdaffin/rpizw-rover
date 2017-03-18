@@ -5,9 +5,9 @@ IFS=$'\n\t'
 
 # Fix for a recent change in ca-certificates-utils this can be removed once upstream rootfs has been update.
 # https://www.archlinux.org/news/ca-certificates-utils-20170307-1-upgrade-requires-manual-intervention/
-pacman -Syuw
-rm /etc/ssl/certs/ca-certificates.crt
-pacman -Su
+pacman -Syuw --noconfirm
+rm -f /etc/ssl/certs/ca-certificates.crt
+pacman -Su --noconfirm
 
 # Install required packages
 pacman -Syu --noconfirm vim bash-completion zsh grml-zsh-config sudo avahi nss-mdns wpa_supplicant termite-terminfo
