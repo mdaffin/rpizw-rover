@@ -16,6 +16,7 @@ fn run() -> Result<()> {
     let matches = App::from_yaml(yaml).version(crate_version!()).get_matches();
 
     let rover = Rover::new(PWM_CHIP, LEFT_PWM, RIGHT_PWM)?;
+    rover.export()?;
 
     if let Some(_) = matches.subcommand_matches("disable") {
         rover.enable(false)
@@ -36,6 +37,7 @@ fn run() -> Result<()> {
         Ok(())
 
     } else if let Some(_) = matches.subcommand_matches("unexport") {
+        rover.enable(false)?;
         rover.unexport()
     } else {
         println!("{}", matches.usage());
