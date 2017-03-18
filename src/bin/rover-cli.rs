@@ -1,13 +1,8 @@
-extern crate sysfs_pwm;
-#[macro_use]
-extern crate error_chain;
+extern crate rpizw_rover;
 #[macro_use]
 extern crate clap;
 
-mod error;
-mod rover;
-
-use error::*;
+use rpizw_rover::error::*;
 
 const PWM_CHIP: u32 = 0;
 const LEFT_PWM: u32 = 0;
@@ -15,7 +10,7 @@ const RIGHT_PWM: u32 = 1;
 
 fn run() -> Result<()> {
     use clap::App;
-    use rover::Rover;
+    use rpizw_rover::Rover;
 
     let yaml = load_yaml!("cli.yml");
     let matches = App::from_yaml(yaml).version(crate_version!()).get_matches();
