@@ -51,6 +51,9 @@ ln -sf /usr/lib/systemd/system/getty@ttyGS0.service /etc/systemd/system/getty.ta
 # Enable hardware pwm
 grep 'dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4' /boot/config.txt >/dev/null || echo 'dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4' >> /boot/config.txt
 
+# Enable the rover-server to start on boot
+ln -sf /etc/systemd/system/rover-server.service /etc/systemd/system/multi-user.target.wants/rover-server.service
+
 # Set zsh as the defualt shell for root and alram
 chsh -s /usr/bin/zsh root
 chsh -s /usr/bin/zsh alarm

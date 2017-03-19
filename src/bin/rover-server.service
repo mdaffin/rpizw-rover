@@ -1,0 +1,9 @@
+[Unit]
+Description=Rest API for a Raspberry Pi Zero W Rover
+
+[Service]
+Environment=RUST_LOG=info
+ExecStart=/usr/local/bin/rover-server
+
+[Install]
+WantedBy=multi-user.target

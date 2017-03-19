@@ -49,6 +49,15 @@ impl ResponsePayload {
     pub fn success() -> ResponsePayload {
         ResponsePayload::Simple { success: true }
     }
+
+    /// Converts the payload to a iron response with the ok status.
+    pub fn to_response(self) -> Response {
+        let mut resp = Response::with((status::Ok, serde_json::to_string(&self).unwrap()));
+        resp.headers.set(ContentType(Mime(TopLevel::Application,
+                                          SubLevel::Json,
+                                          vec![(Attr::Charset, Value::Utf8)])));
+        resp
+    }
 }
 
 /// Reimplmentation of irons itry! macro that sets the body to a json message on error.
@@ -60,7 +69,7 @@ macro_rules! rtry {
         ::std::result::Result::Err(err) => {
             let message = serde_json::to_string(&ResponsePayload::error(format!($message,
                                                 err))).unwrap();
-            return ::std::result::Result::Err($crate::IronError::new(err, ($status, message)))
+            return ::std::result::Result::Err(iron::IronError::new(err, ($status, message)))
         }
     });
 }
@@ -107,24 +116,14 @@ fn main() {
 /// Resets the rover to its default settings.
 fn reset(_: &mut Request) -> IronResult<Response> {
     rtry!(reset_rover());
-    let mut resp = Response::with((status::Ok,
-                                   serde_json::to_string(&ResponsePayload::success()).unwrap()));
-    resp.headers.set(ContentType(Mime(TopLevel::Application,
-                                      SubLevel::Json,
-                                      vec![(Attr::Charset, Value::Utf8)])));
-    Ok(resp)
+    Ok(ResponsePayload::success().to_response())
 }
 
 /// Stops the rover from moving. Equlivent to settings its speed to 0.
 fn stop(_: &mut Request) -> IronResult<Response> {
     let rover = rtry!(Rover::new(PWM_CHIP, LEFT_PWM, RIGHT_PWM));
     rtry!(rover.stop());
-    let mut resp = Response::with((status::Ok,
-                                   serde_json::to_string(&ResponsePayload::success()).unwrap()));
-    resp.headers.set(ContentType(Mime(TopLevel::Application,
-                                      SubLevel::Json,
-                                      vec![(Attr::Charset, Value::Utf8)])));
-    Ok(resp)
+    Ok(ResponsePayload::success().to_response())
 }
 
 /// Enables the rover, allowing it to move. The rover will start moving at what
@@ -134,12 +133,7 @@ fn stop(_: &mut Request) -> IronResult<Response> {
 fn enable(_: &mut Request) -> IronResult<Response> {
     let rover = rtry!(Rover::new(PWM_CHIP, LEFT_PWM, RIGHT_PWM));
     rtry!(rover.enable(true));
-    let mut resp = Response::with((status::Ok,
-                                   serde_json::to_string(&ResponsePayload::success()).unwrap()));
-    resp.headers.set(ContentType(Mime(TopLevel::Application,
-                                      SubLevel::Json,
-                                      vec![(Attr::Charset, Value::Utf8)])));
-    Ok(resp)
+    Ok(ResponsePayload::success().to_response())
 }
 
 /// Disables the rover, stopping it from moving and reacting to future calls to
@@ -150,12 +144,7 @@ fn enable(_: &mut Request) -> IronResult<Response> {
 fn disable(_: &mut Request) -> IronResult<Response> {
     let rover = rtry!(Rover::new(PWM_CHIP, LEFT_PWM, RIGHT_PWM));
     rtry!(rover.enable(false));
-    let mut resp = Response::with((status::Ok,
-                                   serde_json::to_string(&ResponsePayload::success()).unwrap()));
-    resp.headers.set(ContentType(Mime(TopLevel::Application,
-                                      SubLevel::Json,
-                                      vec![(Attr::Charset, Value::Utf8)])));
-    Ok(resp)
+    Ok(ResponsePayload::success().to_response())
 }
 
 /// Sets the speed of the rover. The speed can be any value from 100 to -100. 0
@@ -174,12 +163,7 @@ fn set_speed(req: &mut Request) -> IronResult<Response> {
 
     let rover = rtry!(Rover::new(PWM_CHIP, LEFT_PWM, RIGHT_PWM));
     rtry!(rover.set_speed(left, right));
-    let mut resp = Response::with((status::Ok,
-                                   serde_json::to_string(&ResponsePayload::success()).unwrap()));
-    resp.headers.set(ContentType(Mime(TopLevel::Application,
-                                      SubLevel::Json,
-                                      vec![(Attr::Charset, Value::Utf8)])));
-    Ok(resp)
+    Ok(ResponsePayload::success().to_response())
 }
 
 /// Helper function to ensure the rover is stopped, enabled and ready to start.
