@@ -1,9 +1,9 @@
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-#[macro_use]
+extern crate rpizw_rover;
 extern crate iron;
 extern crate router;
+extern crate mount;
+extern crate staticfile;
+extern crate unicase;
 extern crate logger;
 #[macro_use]
 extern crate chan;
@@ -11,18 +11,24 @@ extern crate chan_signal;
 #[macro_use]
 extern crate log;
 extern crate env_logger;
-
-extern crate rpizw_rover;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
 
 use iron::prelude::*;
-use iron::status;
-use iron::headers::ContentType;
+use iron::{status, AfterMiddleware};
+use iron::method::Method;
+use iron::headers;
 use iron::mime::{Mime, TopLevel, SubLevel, Attr, Value};
 use logger::Logger;
 use router::Router;
+use mount::Mount;
+use staticfile::Static;
+use std::path::Path;
 use rpizw_rover::Rover;
 use chan_signal::Signal;
 use std::io::Read;
+use unicase::UniCase;
 
 const PWM_CHIP: u32 = 0;
 const LEFT_PWM: u32 = 0;
@@ -52,11 +58,11 @@ impl ResponsePayload {
 
     /// Converts the payload to a iron response with the ok status.
     pub fn to_response(self) -> Response {
-        let mut resp = Response::with((status::Ok, serde_json::to_string(&self).unwrap()));
-        resp.headers.set(ContentType(Mime(TopLevel::Application,
-                                          SubLevel::Json,
-                                          vec![(Attr::Charset, Value::Utf8)])));
-        resp
+        let mut res = Response::with((status::Ok, serde_json::to_string(&self).unwrap()));
+        res.headers.set(headers::ContentType(Mime(TopLevel::Application,
+                                                  SubLevel::Json,
+                                                  vec![(Attr::Charset, Value::Utf8)])));
+        res
     }
 }
 
@@ -75,24 +81,32 @@ macro_rules! rtry {
 }
 
 fn main() {
-    let (logger_before, logger_after) = Logger::new(None);
-
     env_logger::init().unwrap();
     reset_rover().unwrap();
 
-    let mut router = Router::new();
-    router.put("/api/reset", reset, "reset");
-    router.put("/api/stop", stop, "stop");
-    router.put("/api/enable", enable, "enable");
-    router.put("/api/disable", disable, "disable");
-    router.put("/api/speed", set_speed, "set_speed");
+    let mut api_router = Router::new();
+    api_router.put("/reset", reset, "reset");
+    api_router.put("/stop", stop, "stop");
+    api_router.put("/enable", enable, "enable");
+    api_router.put("/disable", disable, "disable");
+    api_router.put("/speed", set_speed, "set_speed");
 
-    let mut chain = Chain::new(router);
-    chain.link_before(logger_before);
-    chain.link_after(logger_after);
+    let mut api_chain = Chain::new(api_router);
+    let cors_middleware = CORS {};
+
+    api_chain.link_after(cors_middleware);
+
+    let mut root_mount = Mount::new();
+    root_mount.mount("/api/", api_chain);
+    root_mount.mount("/", Static::new(Path::new("/srv/rover/ui")));
+
+    let mut root_chain = Chain::new(root_mount);
+    let (logger_before, logger_after) = Logger::new(None);
+    root_chain.link_before(logger_before);
+    root_chain.link_after(logger_after);
 
     let signal = chan_signal::notify(&[Signal::INT, Signal::TERM]);
-    let mut serv = Iron::new(chain).http("0.0.0.0:3000").unwrap();
+    let mut serv = Iron::new(root_chain).http("0.0.0.0:3000").unwrap();
     info!("listening on 0.0.0.0:3000");
 
     // Block until SIGINT or SIGTERM is sent.
@@ -106,11 +120,9 @@ fn main() {
         }
     }
 
-    {
-        // Ensure we stop the rover and cleanup.
-        let rover = Rover::new(PWM_CHIP, LEFT_PWM, RIGHT_PWM).unwrap();
-        rover.unexport().unwrap();
-    }
+    // Ensure we stop the rover and cleanup.
+    let rover = Rover::new(PWM_CHIP, LEFT_PWM, RIGHT_PWM).unwrap();
+    rover.unexport().unwrap();
 }
 
 /// Resets the rover to its default settings.
@@ -176,3 +188,34 @@ fn reset_rover() -> rpizw_rover::error::Result<()> {
     rover.stop()?;
     rover.enable(true)
 }
+
+struct CORS;
+
+impl CORS {
+    fn add_headers(res: &mut Response) {
+        res.headers.set(headers::AccessControlAllowOrigin::Any);
+        res.headers.set(headers::AccessControlAllowHeaders(
+            vec![
+                UniCase(String::from("accept")),
+                UniCase(String::from("content-type"))
+            ]
+        ));
+        res.headers.set(headers::AccessControlAllowMethods(vec![Method::Put]));
+    }
+}
+
+impl AfterMiddleware for CORS {
+    fn after(&self, req: &mut Request, mut res: Response) -> IronResult<Response> {
+        if req.method == Method::Options {
+            res = Response::with(status::Ok);
+        }
+        CORS::add_headers(&mut res);
+        Ok(res)
+    }
+
+    fn catch(&self, _: &mut Request, mut err: IronError) -> IronResult<Response> {
+        CORS::add_headers(&mut err.response);
+        Err(err)
+    }
+}
+
