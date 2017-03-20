@@ -13,9 +13,13 @@
     "lint": "eslint --ext .js,.vue src test/unit/specs test/e2e/specs"
   },
   "dependencies": {
+    "concise-ui": "^0.2.1",
     "concise.css": "^4.1.2",
+    "nipplejs": "^0.6.7",
     "vue": "^2.2.2",
-    "vue-router": "^2.2.0"
+    "vue-resource": "^1.2.1",
+    "vue-router": "^2.2.0",
+    "vue-shortkey": "^2.1.0"
   },
   "devDependencies": {
     "autoprefixer": "^6.7.2",
