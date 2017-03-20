@@ -1,4 +1,4 @@
-# rover-ui
+# ui
 
 > User interface for a raspberry pi based rover
 
