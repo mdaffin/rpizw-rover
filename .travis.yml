@@ -17,6 +17,7 @@ install:
 - export PATH="$PATH:$HOME/.cargo/bin"
 - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain=stable
 - rustup target add arm-unknown-linux-gnueabihf
+- npm install -g npm@latest
 script:
 - cargo build --release --target arm-unknown-linux-gnueabihf
 - ( cd ui && npm install && npm run build )
