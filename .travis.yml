@@ -19,7 +19,7 @@ install:
 - rustup target add arm-unknown-linux-gnueabihf
 script:
 - cargo build --release --target arm-unknown-linux-gnueabihf
-- ( cd ui && npm install && npm run lint && npm run test && npm run build )
+- ( cd ui && npm install && npm run build )
 - sudo ./create-image
 - xz -z rpizw-rover.img -c > rpizw-rover.img.xz
 - zip rpizw-rover.img.zip rpizw-rover.img
