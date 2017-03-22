@@ -4,6 +4,7 @@
              v-if="errorMessage !== false">
       <p>{{ errorMessage }}</p>
       <a class="close"
+         @click="closeError"
          href="#">×</a>
     </section>
     <section>
@@ -34,7 +35,10 @@
             </div>
           </div>
           <div>
-            <button @click="stop">Stop</button>
+            <button @click="toggleStopped">
+              <span v-if="stopped">Start</span>
+              <span v-else>Stop</span>
+            </button>
             <button @click="toggleEnabled">
               <span v-if="enabled">Disable</span>
               <span v-else>Enable</span>
@@ -60,52 +64,69 @@ export default {
   name: 'hello',
   data() {
     return {
-      left: '10',
-      right: '10',
+      left: '0',
+      right: '0',
       errorMessage: false,
       locked: true,
+      stopped: true,
       enabled: true,
       wPressed: false,
       aPressed: false,
       sPressed: false,
       dPressed: false,
+      interval: null,
     };
   },
   created() {
     window.addEventListener('keyup', this.keyReleased);
     window.addEventListener('keydown', this.keyPressed);
   },
+  mounted() {
+    console.log('ready');
+  },
+  beforeDestroy() {
+    this.stop();
+  },
   methods: {
-    toggleEnabled() {
-      this.$set(this, 'enabled', !this.enabled);
-      if (this.enabled) {
-        this.$http.put(`${API_URL}/api/enable`).then(() => { }, (response) => {
-          this.errorMessage = response;
-        });
+    errorHandler(response) {
+      this.errorMessage = response.body.error;
+    },
+    toggleStopped() {
+      this.$set(this, 'stopped', !this.stopped);
+      if (this.stopped) {
+        this.stop();
       } else {
-        this.$http.put(`${API_URL}/api/disable`).then(() => { }, (response) => {
-          this.errorMessage = response;
-        });
+        this.start();
       }
     },
     stop() {
+      clearInterval(this.interval);
       this.left = 0;
       this.right = 0;
       this.wPressed = false;
       this.aPressed = false;
       this.sPressed = false;
       this.dPressed = false;
-      this.$http.put(`${API_URL}/api/stop`).then(() => { }, (response) => {
-        console.log(response);
-        this.errorMessage = response;
-      });
+      this.$http.put(`${API_URL}/api/stop`).then(null, this.errorHandler);
+    },
+    start() {
+      this.setSpeed();
+      this.interval = setInterval(this.setSpeed, 50);
+    },
+    toggleEnabled() {
+      this.$set(this, 'enabled', !this.enabled);
+      if (this.enabled) {
+        this.$http.put(`${API_URL}/api/enable`).then(null, this.errorHandler);
+      } else {
+        this.$http.put(`${API_URL}/api/disable`).then(null, this.errorHandler);
+      }
     },
     setSpeed() {
       this.$http.put(`${API_URL}/api/speed`, {
         left: this.left * 10,
         right: this.right * 10,
       }).then(() => { }, (response) => {
-        this.errorMessage = response;
+        this.errorMessage = response.body.error;
       });
     },
     reset() {
@@ -116,9 +137,7 @@ export default {
       this.aPressed = false;
       this.sPressed = false;
       this.dPressed = false;
-      this.$http.put(`${API_URL}/api/reset`).then(() => { }, (response) => {
-        this.errorMessage = response;
-      });
+      this.$http.put(`${API_URL}/api/reset`).then(null, this.errorHandler);
     },
     toggleLock() {
       this.locked = !this.locked;
@@ -151,6 +170,9 @@ export default {
         return;
       }
       this.calculateSpeeds();
+    },
+    closeError() {
+      this.errorMessage = false;
     },
     calculateSpeeds() {
       let left = 0;
@@ -187,14 +209,6 @@ export default {
 
       this.$set(this, 'left', left);
       this.$set(this, 'right', right);
-    },
-  },
-  watch: {
-    left() {
-      this.setSpeed();
-    },
-    right() {
-      this.setSpeed();
     },
   },
 };
