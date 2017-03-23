@@ -52,12 +52,6 @@
 </template>
 
 <script>
-// import nipplejs from 'nipplejs';
-
-// nipplejs.create({
-//   color: 'blue',
-// });
-
 const API_URL = 'http://rpizw-rover.local:3000';
 
 export default {
@@ -81,15 +75,16 @@ export default {
     window.addEventListener('keyup', this.keyReleased);
     window.addEventListener('keydown', this.keyPressed);
   },
-  mounted() {
-    console.log('ready');
-  },
   beforeDestroy() {
     this.stop();
   },
   methods: {
     errorHandler(response) {
-      this.errorMessage = response.body.error;
+      if (response.body && response.body.error) {
+        this.errorMessage = response.body.error;
+      } else {
+        this.errorMessage = `Unable to connect to ${response.url}`;
+      }
     },
     toggleStopped() {
       this.$set(this, 'stopped', !this.stopped);
@@ -125,9 +120,7 @@ export default {
       this.$http.put(`${API_URL}/api/speed`, {
         left: this.left * 10,
         right: this.right * 10,
-      }).then(() => { }, (response) => {
-        this.errorMessage = response.body.error;
-      });
+      }).then(null, this.errorHandler);
     },
     reset() {
       this.enabled = true;
