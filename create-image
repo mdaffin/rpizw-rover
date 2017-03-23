@@ -72,7 +72,7 @@ install -Dm755 "target/arm-unknown-linux-gnueabihf/release/rover-cli" "${mount}/
 install -Dm755 "target/arm-unknown-linux-gnueabihf/release/rover-server" "${mount}/usr/local/bin/rover-server"
 install -Dm755 "src/bin/rover-server.service" "${mount}/etc/systemd/system/rover-server.service"
 mkdir -p  /srv/rover/ui
-cp -r "ui/dist/*" "/srv/rover/ui/"
+cp -r ui/dist/* "/srv/rover/ui/"
 
 # Prep the chroot
 mount -t proc none ${mount}/proc
