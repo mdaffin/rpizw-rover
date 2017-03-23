@@ -144,8 +144,13 @@ export default {
         this.sPressed = true;
       } else if (event.key === 'd') {
         this.dPressed = true;
-      } else if (event.key === 'space') {
+      } else if (event.key === 't') {
+        this.toggleStopped();
+        return;
+      } else if (event.key === 'y') {
         this.toggleEnabled();
+        return;
+      } else {
         return;
       }
       this.calculateSpeeds();
@@ -159,7 +164,7 @@ export default {
         this.sPressed = false;
       } else if (event.key === 'd') {
         this.dPressed = false;
-      } else if (event.key === 'space') {
+      } else {
         return;
       }
       this.calculateSpeeds();
