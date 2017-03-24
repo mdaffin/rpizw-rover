@@ -55,7 +55,7 @@
 const API_URL = 'http://rpizw-rover.local:3000';
 
 export default {
-  name: 'hello',
+  name: 'controls',
   data() {
     return {
       left: '0',
@@ -124,8 +124,8 @@ export default {
     },
     reset() {
       this.enabled = true;
-      this.speed = 10;
-      this.balance = 0;
+      this.left = '0';
+      this.right = '0';
       this.wPressed = false;
       this.aPressed = false;
       this.sPressed = false;
