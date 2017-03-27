@@ -120,7 +120,7 @@ export default {
       this.$http.put(`${API_URL}/api/speed`, {
         left: this.left * 10,
         right: this.right * 10,
-      }).then(null, this.errorHandler);
+      }, { timeout: 200 }).then(null, this.errorHandler);
     },
     reset() {
       this.enabled = true;
