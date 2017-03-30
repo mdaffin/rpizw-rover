@@ -4,7 +4,7 @@
              v-if="errorMessage !== false">
       <p>{{ errorMessage }}</p>
       <a class="close"
-         @click="closeError"
+         @click="errorMessage = false"
          href="#">×</a>
     </section>
     <section>
@@ -168,9 +168,6 @@ export default {
         return;
       }
       this.calculateSpeeds();
-    },
-    closeError() {
-      this.errorMessage = false;
     },
     calculateSpeeds() {
       let left = 0;
