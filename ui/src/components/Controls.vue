@@ -52,7 +52,7 @@
 </template>
 
 <script>
-const API_URL = 'http://rpizw-rover.local:3000';
+const API_URL = process.env.BASE_URL;
 
 export default {
   name: 'controls',
