@@ -80,11 +80,11 @@ mkdir -p  /srv/rover/ui
 cp -r ui/dist/* "/srv/rover/ui/"
 
 # Prep the chroot
-mount -t proc none ${mount}/proc
-mount -t sysfs none ${mount}/sys
-mount -o bind /dev ${mount}/dev
-rm ${mount}/etc/resolv.conf
-cp /etc/resolv.conf ${mount}/etc/resolv.conf
-cp /usr/bin/qemu-arm-static ${mount}/usr/bin/
+mount -t proc none "${mount}/proc"
+mount -t sysfs none "${mount}/sys"
+mount -o bind /dev "${mount}/dev"
+rm "${mount}/etc/resolv.conf"
+cp /etc/resolv.conf "${mount}/etc/resolv.conf"
+cp /usr/bin/qemu-arm-static "${mount}/usr/bin/"
 
 chroot ${mount}  "/tmp/${script}"
