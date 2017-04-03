@@ -17,8 +17,11 @@ install:
 - export PATH="$PATH:$HOME/.cargo/bin"
 - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain=stable
 - rustup target add arm-unknown-linux-gnueabihf
+- nvm install 7.7.3
+- nvm use 7.7.3
 script:
 - cargo build --release --target arm-unknown-linux-gnueabihf
+- ( cd ui && npm install && npm run build )
 - sudo ./create-image
 - xz -z rpizw-rover.img -c > rpizw-rover.img.xz
 - zip rpizw-rover.img.zip rpizw-rover.img

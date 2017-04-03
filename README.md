@@ -1,26 +1,11 @@
 # rpizw-rover
-A raspberry pi zero w based rover
+A raspberry pi zero w based rover.
 
-To create the image run `sudo ./create-image`. You can pass in an optional size
-to create an image of that size like `sudo ./create-image 4G`, it defaults to
-2G. Burn the image to an sd card by running `sudo dd if=rpizw-rover.img
-of=/dev/sdX` where /dev/sdX is the card you want to use.
-
-Once the pi has booted you can connect to it via a serial interface over a usb
-cable by running `picocom /dev/ttyAMA0`. From here you can set the wireless
-credentials by running `wpa_passphrase "<SSID>" "<PASSPHRASE>" >
-/etc/wpa_supplicant/wpa_supplicant-wlan0.conf`. `ip addr` will tell you its
-ip address so you can ssh into it allowing you to run completely wirelessly.
-
-Once in the pi run `sudo ./rover-test.sh` to see if it works. It should move
-forward for a second, then back, turn left, turn right and finally stopping
-before repeating the pattern. Hit `ctrl+c` to stop the script (and the robot).
-
-## Cross compile
+## Cross Compile Setup
 
 [cross compile for arm](https://github.com/japaric/rust-cross)
 
-```
+```shell
 # ubuntu
 sudo apt-get install -qq gcc-arm-linux-gnueabihf
 # arch aur package: arm-linux-gnueabihf-gcc
@@ -28,3 +13,26 @@ rustup update stable
 rustup override stable
 rustup target add arm-unknown-linux-gnueabihf
 ```
+
+## Building The Raspberry Pi Image
+
+```shell
+cargo build --release --target=arm-unknown-linux-gnueabihf
+cd ui
+npm install && npm run build
+cd -
+sudo ./create-image
+```
+
+## USB Serial Interface And Connecting To Wifi
+
+Once the pi has booted you can connect to it via a serial interface over a usb
+cable by running `picocom /dev/ttyAMA0`, or using putty on windows. From here
+you can set the wireless credentials by running `wpa_passphrase "<SSID>"
+"<PASSPHRASE>" >> /etc/wpa_supplicant/wpa_supplicant-wlan0.conf`. Once done you
+can ssh to the pi with `ssh rpizw-rover.local` if you have zero-conf/avahi
+configured or you can get the ip address over the serial connection by running
+`ip addr`.
+
+The webserver is available at http://rpizw-rover.local:3000, or the ip address
+obtained above.
