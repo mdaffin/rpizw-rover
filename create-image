@@ -27,6 +27,11 @@ if [ ! -f "target/arm-unknown-linux-gnueabihf/release/rover-server" ]; then
     exit 1
 fi
 
+if [ ! -d "ui/dist" ]; then
+    echo "'ui/dist' not found. Have you run 'cd ui; npm install && npm run build'?"
+    exit 1
+fi
+
 # Unmount drives and general cleanup on exit, the trap ensures this will always
 # run execpt in the most extream cases.
 cleanup() {
