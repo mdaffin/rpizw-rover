@@ -1,0 +1,7 @@
+FROM resin/%%RESIN_MACHINE_NAME%%-debian
+
+ENV INITSYSTEM on
+WORKDIR /usr/src/app
+COPY ./rover-server /usr/local/bin/rover-server
+COPY ./ui/ /srv/rover/ui/
+CMD /usr/local/bin/rover-server

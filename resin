@@ -1,0 +1,25 @@
+#!/bin/bash
+set -uo pipefail
+trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
+IFS=$'\n\t'
+
+RESIN_URL="${1:-${RESIN_URL:?"must specify resin url as first arguemnt or 'RESIN_URL' environment variable"}}"
+GIT_HASH="git rev-parse --verify HEAD"
+
+cargo build --release --target arm-unknown-linux-gnueabihf
+( cd ui && npm install && npm run build )
+
+rm -rf target/resin
+mkdir -p target/resin
+
+cp Dockerfile.template target/resin/
+cp target/arm-unknown-linux-gnueabihf/release/rover-server target/resin/
+cp -r ui/dist/ target/resin/ui/
+(
+  cd target/resin/
+  git init .
+  git add .
+  git commit -am "built from ${GIT_HASH}"
+  git remote add resin "${RESIN_URL}"
+  git push --force resin master
+)

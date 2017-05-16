@@ -39,7 +39,7 @@
 </template>
 
 <script>
-  const API_URL = `${process.env.BASE_URL}/api`;
+  const API_URL = `${process.env.API_URL}/api`;
 
   export default {
     name: 'controls',
@@ -92,7 +92,7 @@
       },
       start() {
         this.setSpeed();
-        this.interval = setInterval(this.setSpeed, 50);
+        this.interval = setInterval(this.setSpeed, 200);
       },
       toggleEnabled() {
         this.$set(this, 'enabled', !this.enabled);
@@ -106,7 +106,7 @@
         this.$http.put(`${API_URL}/speed`, {
           left: this.left * 10,
           right: this.right * 10,
-        }, { timeout: 200 }).then(null, this.errorHandler);
+        }, { timeout: 500 }).then(null, this.errorHandler);
       },
       reset() {
         this.enabled = true;

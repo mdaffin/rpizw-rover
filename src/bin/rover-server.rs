@@ -106,8 +106,8 @@ fn main() {
     root_chain.link_after(logger_after);
 
     let signal = chan_signal::notify(&[Signal::INT, Signal::TERM]);
-    let mut serv = Iron::new(root_chain).http("0.0.0.0:3000").unwrap();
-    info!("listening on 0.0.0.0:3000");
+    let mut serv = Iron::new(root_chain).http("0.0.0.0:80").unwrap();
+    info!("listening on 0.0.0.0:80");
 
     // Block until SIGINT or SIGTERM is sent.
     chan_select! {
