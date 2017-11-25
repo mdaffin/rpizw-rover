@@ -10,7 +10,7 @@ rm -f /etc/ssl/certs/ca-certificates.crt
 pacman -Su --noconfirm
 
 # Install required packages
-pacman -Syu --noconfirm vim bash-completion zsh grml-zsh-config sudo avahi nss-mdns wpa_supplicant termite-terminfo
+pacman -Syu --noconfirm vim bash-completion zsh grml-zsh-config sudo avahi nss-mdns wpa_supplicant termite-terminfo dnsmasq hostapd
 echo rpizw-rover > /etc/hostname
 
 # Configure sudo
@@ -31,8 +31,24 @@ ln -sf /usr/lib/systemd/system/wpa_supplicant@.service /etc/systemd/system/multi
 cat >/etc/systemd/network/wlan0.network <<EOF
 [Match]
 Name=wlan0
+
 [Network]
 DHCP=yes
+EOF
+
+cat <<EOF >/etc/systemd/network/usb0.network
+[Match]
+Name=usb0
+
+[Network]
+Address=192.168.56.1/24
+EOF
+
+cat <<EOF >/etc/dnsmasq.conf
+interface=usb0
+dhcp-option=3
+dhcp-option=6
+dhcp-range=192.168.56.2,192.168.56.5,12h
 EOF
 
 cat <<EOF > /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
@@ -45,7 +61,7 @@ EOF
 
 # Enable the usb serial
 grep 'dtoverlay=dwc2' /boot/config.txt >/dev/null || echo 'dtoverlay=dwc2' >> /boot/config.txt
-grep 'modules-load=dwc2,g_serial' /boot/cmdline.txt >/dev/null || sed -i 's/.*rootwait.*/& modules-load=dwc2,g_serial/' /boot/cmdline.txt
+grep 'modules-load=dwc2,g_cdc' /boot/cmdline.txt >/dev/null || sed -i 's/.*rootwait.*/& modules-load=dwc2,g_cdc/' /boot/cmdline.txt
 ln -sf /usr/lib/systemd/system/getty@ttyGS0.service /etc/systemd/system/getty.target.wants/getty@ttyGS0.service
 
 # Enable hardware pwm

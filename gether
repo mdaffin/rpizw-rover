@@ -1,0 +1,15 @@
+/boot/cmdline.txt   modules-load=dwc2,g_cdc
+
+cat <<EOF >> /etc/systemd/network/usb0.network
+[Match]
+Name=usb0
+
+[Network]
+Address=192.168.100.1/24
+EOF
+
+cat <<EOF >>/etc/dnsmasq.conf                                                                                                                                                 :(
+interface=usb0
+dhcp-range=192.168.100.2,192.168.100.254,12h
+EOF
+
