@@ -45,7 +45,7 @@ EOF
 
 # Enable the usb serial
 grep 'dtoverlay=dwc2' /boot/config.txt >/dev/null || echo 'dtoverlay=dwc2' >> /boot/config.txt
-grep 'modules-load=dwc2,g_serial' /boot/cmdline.txt >/dev/null || sed -i 's/.*rootwait.*/& modules-load=dwc2,g_serial/' /boot/cmdline.txt
+grep 'modules-load=dwc2,libcomposite' /boot/cmdline.txt >/dev/null || sed -i 's/.*rootwait.*/& modules-load=dwc2,libcomposite/' /boot/cmdline.txt
 ln -sf /usr/lib/systemd/system/getty@ttyGS0.service /etc/systemd/system/getty.target.wants/getty@ttyGS0.service
 
 # Enable hardware pwm
@@ -53,6 +53,53 @@ grep 'dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4' /boot/config.txt >/dev/
 
 # Enable the rover-server to start on boot
 ln -sf /etc/systemd/system/rover-server.service /etc/systemd/system/multi-user.target.wants/rover-server.service
+
+cat >/usr/local/bin/rpizw-usb <<\EOF
+#!/bin/bash
+SYS="/sys/kernel/config/usb_gadget/rpizw"
+ID="0x409"
+STRINGS="$SYS/strings/$ID"
+CONFIG="$SYS/configs/c.1"
+
+mkdir -p "$SYS"
+echo 0x1d6b > "$SYS/idVendor"  # Linux Foundation
+echo 0x0104 > "$SYS/idProduct" # Multifunction Composite Gadget
+echo 0x0100 > "$SYS/bcdDevice" # v1.0.0
+echo 0x0200 > "$SYS/bcdUSB"    # USB2
+
+mkdir -p "$STRINGS"
+echo "fedcba9876543210" > "$STRINGS/serialnumber"
+echo "Michael Daffin" > "$STRINGS/manufacturer"
+echo "RPIZW USB Device" > "$STRINGS/product"
+
+mkdir -p "$CONFIG"
+echo "Config 1: ECM network" > "$CONFIG/strings/$ID/configuration"
+echo 250 > "$CONFIG/MaxPower"
+
+# Add functions here
+mkdir -p "$SYS/functions/acm.usb0"
+ln -s "$SYS/functions/acm.usb0" "$CONFIG/"
+# End functions
+
+ls /sys/class/udc > "$SYS/UDC"
+EOF
+
+chmod +x /usr/local/bin/rpizw-usb
+
+cat >/etc/systemd/system/rpizw-usb.service <<\EOF
+[Unit]
+Description=RPIZW USB gadgets
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/rpizw-usb
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+ln -sf /etc/systemd/system/rpizw-usb.service /etc/systemd/system/multi-user.target.wants/rpizw-usb.service
 
 # Set zsh as the defualt shell for root and alram
 chsh -s /usr/bin/zsh root
