@@ -10,7 +10,7 @@ rm -f /etc/ssl/certs/ca-certificates.crt
 pacman -Su --noconfirm
 
 # Install required packages
-pacman -Syu --noconfirm vim bash-completion zsh grml-zsh-config sudo avahi nss-mdns wpa_supplicant termite-terminfo
+pacman -Syu --noconfirm vim bash-completion zsh grml-zsh-config sudo avahi nss-mdns wpa_supplicant termite-terminfo hostapd dnsmasq
 echo rpizw-rover > /etc/hostname
 
 # Configure sudo
@@ -59,6 +59,7 @@ cat >/usr/local/bin/rpizw-usb <<\EOF
 SYS="/sys/kernel/config/usb_gadget/rpizw"
 ID="0x409"
 STRINGS="$SYS/strings/$ID"
+FUNCTIONS="$SYS/functions"
 CONFIG="$SYS/configs/c.1"
 
 mkdir -p "$SYS"
@@ -70,17 +71,18 @@ echo 0x0200 > "$SYS/bcdUSB"    # USB2
 mkdir -p "$STRINGS"
 echo "fedcba9876543210" > "$STRINGS/serialnumber"
 echo "Michael Daffin" > "$STRINGS/manufacturer"
-echo "RPIZW USB Device" > "$STRINGS/product"
+echo "Raspberry Pi" > "$STRINGS/product"
+
+mkdir -p "$FUNCTIONS/acm.usb0"   # serial
+#mkdir -p "$FUNCTIONS/rndis.usb0" # network
 
 mkdir -p "$CONFIG"
-echo "Config 1: ECM network" > "$CONFIG/strings/$ID/configuration"
 echo 250 > "$CONFIG/MaxPower"
 
-# Add functions here
-mkdir -p "$SYS/functions/acm.usb0"
-ln -s "$SYS/functions/acm.usb0" "$CONFIG/"
-# End functions
+#ln -s "$FUNCTIONS/rndis.usb0" "$CONFIG/"
+ln -s "$FUNCTIONS/acm.usb0" "$CONFIG/"
 
+#udevadm settle -t 5 || :
 ls /sys/class/udc > "$SYS/UDC"
 EOF
 
@@ -100,6 +102,53 @@ WantedBy=multi-user.target
 EOF
 
 ln -sf /etc/systemd/system/rpizw-usb.service /etc/systemd/system/multi-user.target.wants/rpizw-usb.service
+
+cat >/etc/hostapd/hostapd.conf <<\EOF
+interface=wlan0
+#bridge=br0
+
+# SSID to be used in IEEE 802.11 management frames
+ssid=AP
+# Driver interface type (hostap/wired/none/nl80211/bsd)
+driver=nl80211
+# Country code (ISO/IEC 3166-1)
+country_code=GB
+
+# Operation mode (a = IEEE 802.11a (5 GHz), b = IEEE 802.11b (2.4 GHz)
+hw_mode=g
+# Channel number
+channel=7
+# Maximum number of stations allowed
+max_num_sta=5
+
+# Bit field: bit0 = WPA, bit1 = WPA2
+wpa=2
+# Bit field: 1=wpa, 2=wep, 3=both
+auth_algs=1
+
+# Set of accepted cipher suites
+rsn_pairwise=CCMP
+# Set of accepted key management algorithms
+wpa_key_mgmt=WPA-PSK
+wpa_passphrase=password
+
+# hostapd event logger configuration
+logger_stdout=-1
+logger_stdout_level=2
+EOF
+
+cat >/etc/dnsmasq.conf <<\EOF
+interface=wlan0
+bind-interfaces
+
+#dhcp-option=3,192.168.1.1
+#dhcp-option=6,8.8.8.8,8.8.4.4
+
+dhcp-range=192.168.111.50,192.168.111.100,24h
+EOF
+
+ln -sf /usr/lib/systemd/system/hostapd.service /etc/systemd/system/multi-user.target.wants/hostapd.service
+ln -sf /usr/lib/systemd/system/dnsmasq.service /etc/systemd/system/multi-user.target.wants/dnsmasq.service
 
 # Set zsh as the defualt shell for root and alram
 chsh -s /usr/bin/zsh root
