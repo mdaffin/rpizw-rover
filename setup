@@ -3,11 +3,9 @@ set -uo pipefail
 trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
 IFS=$'\n\t'
 
-# Fix for a recent change in ca-certificates-utils this can be removed once upstream rootfs has been update.
-# https://www.archlinux.org/news/ca-certificates-utils-20170307-1-upgrade-requires-manual-intervention/
-pacman -Syuw --noconfirm
-rm -f /etc/ssl/certs/ca-certificates.crt
-pacman -Su --noconfirm
+pacman-key --init
+pacman-key --populate archlinuxarm
+pacman -Syu --noconfirm
 
 # Install required packages
 pacman -Syu --noconfirm vim bash-completion zsh grml-zsh-config sudo avahi nss-mdns wpa_supplicant termite-terminfo
@@ -60,3 +58,6 @@ chsh -s /usr/bin/zsh alarm
 touch /root/.zshrc
 touch /home/alarm/.zshrc
 chown alarm. /home/alarm/.zshrc
+
+# Weird bug where this is not being killed on chroot exit which is causing the partitions to not unmount
+killall -9 gpg-agent
