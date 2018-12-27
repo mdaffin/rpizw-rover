@@ -23,7 +23,7 @@ script:
 - cargo build --release --target arm-unknown-linux-gnueabihf
 - ( cd ui && npm install && npm run build )
 - sudo ./create-image
-- xz -z rpizw-rover.img -c > rpizw-rover.img.xz
+- xz -vz rpizw-rover.img -c > rpizw-rover.img.xz
 - zip rpizw-rover.img.zip rpizw-rover.img
 deploy:
   provider: releases
